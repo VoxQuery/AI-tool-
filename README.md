@@ -30,17 +30,15 @@ A AI based web application designed to minimize food waste by tracking grocery p
 ### Local Development
 
 1. **Clone the repository**
-   \`\`\`bash
+   ```
    git clone <repository-url>
    cd voxquery-food-tracker
-   \`\`\`
+   ```
 
 2. **Install dependencies**
-   \`\`\`bash
+   ```
    npm install
-   # or
-   yarn install
-   \`\`\`
+   ```
 
 3. **Set up environment variables**
    Create a `.env.local` file in the root directory:
@@ -56,9 +54,9 @@ A AI based web application designed to minimize food waste by tracking grocery p
    \`\`\`
 
 4. **Run the development server**
-   \`\`\`bash
+   ```
    npm run dev
-   \`\`\`
+   ```
 
 5. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
@@ -164,16 +162,11 @@ voxquery-food-tracker/
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## Acknowledgments
 
 - Built with [Next.js](https://nextjs.org/)
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - Icons from [Lucide](https://lucide.dev/)
-- Deployed on [Vercel](https://vercel.com/)
-\`\`\`
+   
 
 
