@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoxQuery - Digital Food Waste Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        /* Professional Theme */
+        :root {
+            --primary-blue: #3b82f6;
+            --primary-blue-dark: #1d4ed8;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        /* Professional Card Effects */
+        .professional-card {
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .professional-card:hover {
+            transform: translateY(-4px) rotateX(2deg) rotateY(2deg);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Professional Button */
+        .professional-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        }
+
+        .professional-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .professional-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .professional-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Navigation */
+        .professional-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+        }
+
+        .mobile-menu.active {
+            display: block;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+            transition: width 0.3s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .desktop-nav {
+                display: none;
+            }
+            .mobile-nav {
+                display: flex;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .desktop-nav {
+                display: flex;
+            }
+            .mobile-nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 professional-nav">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Desktop Navigation -->
+            <div class="desktop-nav justify-between items-center h-16">
+                <div class="flex items-center space-x-3 hover-lift cursor-pointer">
+                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                        <i data-lucide="package" class="h-6 w-6 text-white"></i>
+                    </div>
+                    <span class="font-bold text-xl text-slate-800">VoxQuery</span>
+                </div>
+
+                <div class="flex space-x-2">
+                    <button onclick="showSection('home')" class="nav-btn flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 bg-blue-600 text-white">
+                        <i data-lucide="home" class="h-4 w-4"></i>
+                        <span>Home</span>
+                    </button>
+                    <button onclick="showSection('upload')" class="nav-btn flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-800 hover:bg-blue-50">
+                        <i data-lucide="upload" class="h-4 w-4"></i>
+                        <span>Upload Receipt</span>
+                    </button>
+                    <button onclick="showSection('pantry')" class="nav-btn flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-800 hover:bg-blue-50">
+                        <i data-lucide="package" class="h-4 w-4"></i>
+                        <span>Pantry</span>
+                    </button>
+                    <button onclick="showSection('recipes')" class="nav-btn flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-800 hover:bg-blue-50">
+                        <i data-lucide="chef-hat" class="h-4 w-4"></i>
+                        <span>Recipes</span>
+                    </button>
+                    <button onclick="showSection('settings')" class="nav-btn flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-800 hover:bg-blue-50">
+                        <i data-lucide="settings" class="h-4 w-4"></i>
+                        <span>Settings</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div class="mobile-nav justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i data-lucide="package" class="h-5 w-5 text-white"></i>
+                    </div>
+                    <span class="font-bold text-lg text-slate-800">VoxQuery</span>
+                </div>
+                <button onclick="toggleMobileMenu()" class="p-2 text-slate-600 hover:text-slate-800">
+                    <i data-lucide="menu" class="h-5 w-5"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="mobile-menu absolute top-16 left-0 right-0 bg-white border-t border-slate-200 shadow-lg">
+                <div class="px-4 py-4 space-y-2">
+                    <button onclick="showSection('home'); toggleMobileMenu()" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-600 text-white">
+                        <i data-lucide="home" class="h-4 w-4"></i>
+                        <span>Home</span>
+                    </button>
+                    <button onclick="showSection('upload'); toggleMobileMenu()" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-blue-50">
+                        <i data-lucide="upload" class="h-4 w-4"></i>
+                        <span>Upload Receipt</span>
+                    </button>
+                    <button onclick="showSection('pantry'); toggleMobileMenu()" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-blue-50">
+                        <i data-lucide="package" class="h-4 w-4"></i>
+                        <span>Pantry</span>
+                    </button>
+                    <button onclick="showSection('recipes'); toggleMobileMenu()" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-blue-50">
+                        <i data-lucide="chef-hat" class="h-4 w-4"></i>
+                        <span>Recipes</span>
+                    </button>
+                    <button onclick="showSection('settings'); toggleMobileMenu()" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-blue-50">
+                        <i data-lucide="settings" class="h-4 w-4"></i>
+                        <span>Settings</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Spacer for fixed navigation -->
+    <div class="h-16"></div>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Home Section -->
+        <section id="home" class="section active">
+            <!-- Hero Section -->
+            <div class="relative px-4 py-20 sm:px-6 lg:px-8">
+                <div class="max-w-7xl mx-auto">
+                    <div class="text-center fade-in">
+                        <div class="inline-flex items-center px-4 py-2 rounded-full bg-green-100 text-green-800 mb-6">
+                            <i data-lucide="leaf" class="w-4 h-4 mr-2"></i>
+                            Reduce Food Waste by 40%
+                        </div>
+
+                        <h1 class="text-5xl sm:text-7xl font-bold tracking-tight mb-8 text-slate-800">
+                            <span class="text-blue-600">VoxQuery</span>
+                            <br />
+                            <span class="text-3xl sm:text-5xl text-slate-600">Digital Food Waste Tracker</span>
+                        </h1>
+
+                        <p class="text-xl sm:text-2xl text-slate-600 mb-12 max-w-4xl mx-auto leading-relaxed">
+                            Minimize food waste with our AI-powered system that tracks groceries, predicts expiry dates, sends smart alerts, and suggests delicious recipes.
+                        </p>
+
+                        <div id="expiryAlert" class="mb-12 p-6 professional-card max-w-md mx-auto hidden">
+                            <div class="flex items-center justify-center space-x-3 text-orange-600">
+                                <i data-lucide="bell" class="h-6 w-6"></i>
+                                <span class="font-semibold text-lg" id="expiryText">Items expiring soon!</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                            <button onclick="showSection('upload')" class="professional-btn text-white border-0 px-8 py-4 text-lg rounded-lg flex items-center justify-center space-x-3">
+                                <i data-lucide="upload" class="h-6 w-6"></i>
+                                <span>Upload Receipt</span>
+                                <i data-lucide="sparkles" class="h-5 w-5"></i>
+                            </button>
+                            <button onclick="showSection('pantry')" class="hover-lift px-8 py-4 text-lg border-2 border-blue-200 text-blue-600 hover:bg-blue-50 bg-transparent rounded-lg flex items-center justify-center space-x-3">
+                                <i data-lucide="package" class="h-6 w-6"></i>
+                                <span>View Pantry</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="px-4 py-20 sm:px-6 lg:px-8 bg-slate-50">
+                <div class="max-w-7xl mx-auto">
+                    <div class="text-center mb-16">
+                        <h2 class="text-4xl sm:text-5xl font-bold mb-6 text-slate-800">Smart Food Management</h2>
+                        <p class="text-xl text-slate-600 max-w-3xl mx-auto">
+                            Our AI-powered ecosystem transforms how you manage food, reducing waste and saving money
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <!-- Feature Cards -->
+                        <div class="professional-card hover-lift p-6 rounded-2xl">
+                            <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-4">
+                                <i data-lucide="upload" class="h-8 w-8 text-blue-600"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-slate-800 mb-3">Smart Receipt Scanning</h3>
+                            <p class="text-slate-600 mb-4">Advanced OCR technology automatically extracts and categorizes your groceries with AI precision</p>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Image & PDF support</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">AI-powered categorization</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Intelligent quantity detection</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="professional-card hover-lift p-6 rounded-2xl">
+                            <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4">
+                                <i data-lucide="zap" class="h-8 w-8 text-green-600"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-slate-800 mb-3">Expiry Prediction</h3>
+                            <p class="text-slate-600 mb-4">Machine learning algorithms predict expiry dates based on product type and storage conditions</p>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Storage-aware predictions</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">ML-powered accuracy</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Custom adjustments</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="professional-card hover-lift p-6 rounded-2xl">
+                            <div class="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mb-4">
+                                <i data-lucide="bell" class="h-8 w-8 text-orange-600"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-slate-800 mb-3">Smart Alerts</h3>
+                            <p class="text-slate-600 mb-4">Proactive notifications keep you informed before food expires with customizable timing</p>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Email notifications</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Customizable timing</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Priority sorting</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="professional-card hover-lift p-6 rounded-2xl">
+                            <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-4">
+                                <i data-lucide="chef-hat" class="h-8 w-8 text-purple-600"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-slate-800 mb-3">Recipe Suggestions</h3>
+                            <p class="text-slate-600 mb-4">AI-curated recipes match your expiring ingredients for delicious, waste-free cooking</p>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Ingredient matching</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Difficulty levels</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Prep time estimates</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="professional-card hover-lift p-6 rounded-2xl">
+                            <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mb-4">
+                                <i data-lucide="package" class="h-8 w-8 text-indigo-600"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-slate-800 mb-3">Pantry Management</h3>
+                            <p class="text-slate-600 mb-4">Comprehensive dashboard organizes and tracks all food items with intelligent categorization</p>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Visual dashboard</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Advanced search & filter</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Bulk operations</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="professional-card hover-lift p-6 rounded-2xl">
+                            <div class="w-16 h-16 bg-teal-100 rounded-2xl flex items-center justify-center mb-4">
+                                <i data-lucide="smartphone" class="h-8 w-8 text-teal-600"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-slate-800 mb-3">Mobile Responsive</h3>
+                            <p class="text-slate-600 mb-4">Seamless experience across all devices with progressive web app capabilities</p>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Touch-optimized interface</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Offline capabilities</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i data-lucide="check-circle" class="h-4 w-4 text-green-600 mr-2"></i>
+                                    <span class="text-slate-600">Lightning fast</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="px-4 py-20 sm:px-6 lg:px-8">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-4xl sm:text-5xl font-bold mb-6 text-slate-800">Start Your Sustainable Journey</h2>
+                    <p class="text-xl text-slate-600 mb-10 leading-relaxed">
+                        Join thousands of users who have already reduced their food waste and saved money with VoxQuery
+                    </p>
+                    <button onclick="showSection('upload')" class="professional-btn text-white border-0 px-10 py-5 text-xl rounded-lg flex items-center justify-center space-x-3 mx-auto">
+                        <span>Get Started Now</span>
+                        <i data-lucide="arrow-right" class="h-6 w-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="px-4 py-12 sm:px-6 lg:px-8 border-t border-slate-200 bg-slate-50">
+                <div class="max-w-7xl mx-auto text-center">
+                    <div class="flex items-center justify-center space-x-2 mb-4">
+                        <i data-lucide="package" class="h-6 w-6 text-blue-600"></i>
+                        <span class="text-xl font-bold text-slate-800">VoxQuery</span>
+                    </div>
+                    <p class="text-slate-600">Digital Food Waste Tracker - Building a sustainable future</p>
+                </div>
+            </footer>
+        </section>
+
+        <!-- Upload Section -->
+        <section id="upload" class="section">
+            <div class="max-w-4xl mx-auto px-4 py-8">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2 text-slate-800">Upload Receipt</h1>
+                    <p class="text-slate-600">Upload a photo or PDF of your grocery receipt to automatically extract items</p>
+                </div>
+
+                <!-- Upload Area -->
+                <div class="professional-card p-8 rounded-2xl mb-8">
+                    <h3 class="text-xl font-bold mb-4 text-slate-800">Receipt Upload</h3>
+                    <div id="uploadArea" class="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer">
+                        <div id="uploadContent">
+                            <i data-lucide="upload" class="h-12 w-12 text-slate-400 mx-auto mb-4"></i>
+                            <p class="text-lg font-medium text-slate-800 mb-2">Drop your receipt here</p>
+                            <p class="text-sm text-slate-600">Supports JPG, PNG, and PDF files</p>
+                        </div>
+                        <div id="processingContent" class="hidden">
+                            <div class="animate-spin h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+                            <p class="text-lg font-medium text-slate-800 mb-2">Processing receipt...</p>
+                            <p class="text-sm text-slate-600">Extracting text and identifying grocery items</p>
+                        </div>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*,.pdf" class="hidden">
+                </div>
+
+                <!-- Extracted Items -->
+                <div id="extractedItems" class="professional-card p-6 rounded-2xl hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">Extracted Items (<span id="itemCount">0</span>)</h3>
+                            <p class="text-slate-600">Review and edit the items before adding to your pantry</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <label class="text-sm font-medium text-slate-800">Storage:</label>
+                            <select id="storageSelect" class="border border-slate-300 rounded-lg px-3 py-2 text-slate-800">
+                                <option value="fridge">Fridge</option>
+                                <option value="freezer">Freezer</option>
+                                <option value="pantry">Pantry</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="itemsList" class="space-y-4 mb-6">
+                        <!-- Items will be populated here -->
+                    </div>
+
+                    <div class="flex justify-end space-x-4">
+                        <button onclick="clearItems()" class="border border-slate-300 text-slate-600 hover:bg-slate-50 px-6 py-2 rounded-lg">
+                            Clear All
+                        </button>
+                        <button onclick="addToPantry()" class="professional-btn text-white border-0 px-6 py-2 rounded-lg flex items-center space-x-2">
+                            <i data-lucide="plus" class="h-4 w-4"></i>
+                            <span>Add to Pantry</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pantry Section -->
+        <section id="pantry" class="section">
+            <div class="max-w-7xl mx-auto px-4 py-8">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2 text-slate-800">My Pantry</h1>
+                        <p class="text-slate-600">
+                            <span id="totalItems">0</span> items • 
+                            <span id="expiringItems">0</span> expiring soon
+                        </p>
+                    </div>
+                    <button onclick="showAddItemModal()" class="professional-btn text-white border-0 px-6 py-3 rounded-lg flex items-center space-x-2">
+                        <i data-lucide="plus" class="h-4 w-4"></i>
+                        <span>Add Item</span>
+                    </button>
+                </div>
+
+                <!-- Filters -->
+                <div class="professional-card p-6 rounded-2xl mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-800 mb-2">Search</label>
+                            <div class="relative">
+                                <i data-lucide="search" class="absolute left-3 top-3 h-4 w-4 text-slate-400"></i>
+                                <input type="text" id="searchInput" placeholder="Search items..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-800 mb-2">Category</label>
+                            <select id="categoryFilter" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="all">All Categories</option>
+                                <option value="dairy">Dairy</option>
+                                <option value="meat">Meat</option>
+                                <option value="vegetables">Vegetables</option>
+                                <option value="fruits">Fruits</option>
+                                <option value="bread">Bread</option>
+                                <option value="canned">Canned</option>
+                                <option value="frozen">Frozen</option>
+                                <option value="dry_goods">Dry Goods</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-800 mb-2">Storage</label>
+                            <select id="storageFilter" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="all">All Storage</option>
+                                <option value="fridge">Fridge</option>
+                                <option value="freezer">Freezer</option>
+                                <option value="pantry">Pantry</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Grid -->
+                <div id="pantryGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Items will be populated here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="professional-card p-12 rounded-2xl text-center hidden">
+                    <i data-lucide="package" class="h-12 w-12 text-slate-400 mx-auto mb-4"></i>
+                    <h3 class="text-lg font-medium mb-2 text-slate-800">No items found</h3>
+                    <p class="text-slate-600 mb-4">Your pantry is empty. Add some items to get started!</p>
+                    <button onclick="showAddItemModal()" class="professional-btn text-white border-0 px-6 py-2 rounded-lg flex items-center space-x-2 mx-auto">
+                        <i data-lucide="plus" class="h-4 w-4"></i>
+                        <span>Add Your First Item</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recipes Section -->
+        <section id="recipes" class="section">
+            <div class="max-w-7xl mx-auto px-4 py-8">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2 text-slate-800">Recipe Suggestions</h1>
+                    <p class="text-slate-600">Discover recipes to use up ingredients before they expire</p>
+                </div>
+
+                <!-- Expiring Items Alert -->
+                <div id="recipesExpiryAlert" class="professional-card p-6 rounded-2xl mb-8 border-orange-200 bg-orange-50 hidden">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <i data-lucide="alert-triangle" class="h-5 w-5 text-orange-600"></i>
+                        <h3 class="font-bold text-orange-800">Items Expiring Soon</h3>
+                    </div>
+                    <p class="text-orange-700 mb-3">Use these ingredients in your recipes before they expire</p>
+                    <div id="expiringIngredients" class="flex flex-wrap gap-2">
+                        <!-- Expiring items will be shown here -->
+                    </div>
+                </div>
+
+                <!-- Recipe Grid -->
+                <div id="recipesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Recipes will be populated here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="recipesEmptyState" class="professional-card p-12 rounded-2xl text-center">
+                    <i data-lucide="chef-hat" class="h-12 w-12 text-slate-400 mx-auto mb-4"></i>
+                    <h3 class="text-lg font-medium mb-2 text-slate-800">No recipes available</h3>
+                    <p class="text-slate-600">Add some items to your pantry to get personalized recipe suggestions!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings" class="section">
+            <div class="max-w-4xl mx-auto px-4 py-8">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2 text-slate-800">Settings</h1>
+                    <p class="text-slate-600">Manage your account preferences and notification settings</p>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Notification Settings -->
+                    <div class="professional-card p-6 rounded-2xl">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <i data-lucide="bell" class="h-5 w-5 text-blue-600"></i>
+                            <h3 class="text-xl font-bold text-slate-800">Notification Settings</h3>
+                        </div>
+                        <p class="text-slate-600 mb-6">Configure how and when you receive expiry alerts</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-800 mb-2">Email Address</label>
+                                <input type="email" id="emailInput" placeholder="your@email.com" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <p class="text-xs text-slate-600 mt-1">Used for expiry notifications and account updates</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-800 mb-2">Notification Days</label>
+                                <select id="notificationDays" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="1">1 day before</option>
+                                    <option value="2">2 days before</option>
+                                    <option value="3" selected>3 days before</option>
+                                    <option value="5">5 days before</option>
+                                    <option value="7">1 week before</option>
+                                </select>
+                                <p class="text-xs text-slate-600 mt-1">How many days before expiry to send alerts</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label class="text-sm font-medium text-slate-800">Email Notifications</label>
+                                <p class="text-xs text-slate-600">Receive email alerts for expiring items</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="emailNotifications" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Data Management -->
+                    <div class="professional-card p-6 rounded-2xl">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <i data-lucide="database" class="h-5 w-5 text-blue-600"></i>
+                            <h3 class="text-xl font-bold text-slate-800">Data Management</h3>
+                        </div>
+                        <p class="text-slate-600 mb-6">Manage your stored data and account information</p>
+
+                        <div class="p-4 border rounded-lg bg-slate-50 mb-6">
+                            <h4 class="font-medium mb-2 text-slate-800">Storage Information</h4>
+                            <p class="text-sm text-slate-600 mb-4">
+                                Your data is stored locally in your browser. This includes all pantry items, settings, and preferences. No data is sent to external servers.
+                            </p>
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span class="font-medium text-slate-800">Data Location:</span>
+                                    <p class="text-slate-600">Browser Local Storage</p>
+                                </div>
+                                <div>
+                                    <span class="font-medium text-slate-800">Backup:</span>
+                                    <p class="text-slate-600">Manual export/import</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="clearAllData()" class="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <i data-lucide="trash-2" class="h-4 w-4"></i>
+                            <span>Clear All Data</span>
+                        </button>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="flex justify-end">
+                        <button onclick="saveSettings()" class="professional-btn text-white border-0 px-8 py-3 rounded-lg flex items-center space-x-2">
+                            <i data-lucide="settings" class="h-4 w-4"></i>
+                            <span>Save Settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add Item Modal -->
+    <div id="addItemModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800">Add New Item</h3>
+                <button onclick="closeAddItemModal()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-800 mb-2">Name</label>
+                    <input type="text" id="newItemName" placeholder="Item name" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-800 mb-2">Category</label>
+                        <select id="newItemCategory" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="dairy">Dairy</option>
+                            <option value="meat">Meat</option>
+                            <option value="vegetables">Vegetables</option>
+                            <option value="fruits">Fruits</option>
+                            <option value="bread">Bread</option>
+                            <option value="canned">Canned</option>
+                            <option value="frozen">Frozen</option>
+                            <option value="dry_goods" selected>Dry Goods</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-800 mb-2">Storage</label>
+                        <select id="newItemStorage" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="fridge">Fridge</option>
+                            <option value="freezer">Freezer</option>
+                            <option value="pantry" selected>Pantry</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-800 mb-2">Quantity</label>
+                        <input type="number" id="newItemQuantity" value="1" step="0.1" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-800 mb-2">Unit</label>
+                        <select id="newItemUnit" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="each" selected>Each</option>
+                            <option value="lb">Pounds</option>
+                            <option value="kg">Kilograms</option>
+                            <option value="oz">Ounces</option>
+                            <option value="g">Grams</option>
+                            <option value="gallon">Gallon</option>
+                            <option value="liter">Liter</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-800 mb-2">Notes (optional)</label>
+                    <textarea id="newItemNotes" placeholder="Additional notes about this item" rows="3" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4 mt-6">
+                <button onclick="closeAddItemModal()" class="border border-slate-300 text-slate-600 hover:bg-slate-50 px-6 py-2 rounded-lg">
+                    Cancel
+                </button>
+                <button onclick="addNewItem()" class="professional-btn text-white border-0 px-6 py-2 rounded-lg">
+                    Add Item
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-white border border-slate-200 rounded-lg shadow-lg p-4 transform translate-y-full transition-transform duration-300 z-50">
+        <div class="flex items-center space-x-3">
+            <div id="toastIcon" class="flex-shrink-0">
+                <i data-lucide="check-circle" class="h-5 w-5 text-green-600"></i>
+            </div>
+            <div>
+                <p id="toastTitle" class="font-medium text-slate-800">Success</p>
+                <p id="toastMessage" class="text-sm text-slate-600">Operation completed successfully</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Global state
+        let pantryItems = JSON.parse(localStorage.getItem('voxquery-pantry') || '[]');
+        let settings = JSON.parse(localStorage.getItem('voxquery-settings') || '{"email":"","notificationDays":3,"emailNotifications":true}');
+        let extractedItems = [];
+        let isTraining = false;
+        let modelTrained = localStorage.getItem('voxquery-model-trained') === 'true';
+
+        // Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+                section.style.display = 'none';
+            });
+
+            // Show selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                targetSection.classList.add('active');
+            }
+
+            // Update navigation buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('text-slate-600', 'hover:text-slate-800', 'hover:bg-blue-50');
+            });
+
+            // Highlight active nav button
+            const activeBtn = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-600', 'hover:text-slate-800', 'hover:bg-blue-50');
+                activeBtn.classList.add('bg-blue-600', 'text-white');
+            }
+
+            // Load section-specific data
+            if (sectionId === 'pantry') {
+                loadPantryItems();
+            } else if (sectionId === 'recipes') {
+                loadRecipes();
+            } else if (sectionId === 'settings') {
+                loadSettings();
+            } else if (sectionId === 'home') {
+                updateExpiryAlert();
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('active');
+        }
+
+        // Toast notifications
+        function showToast(title, message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastTitle = document.getElementById('toastTitle');
+            const toastMessage = document.getElementById('toastMessage');
+
+            // Set icon based on type
+            if (type === 'success') {
+                toastIcon.innerHTML = '<i data-lucide="check-circle" class="h-5 w-5 text-green-600"></i>';
+            } else if (type === 'error') {
+                toastIcon.innerHTML = '<i data-lucide="x-circle" class="h-5 w-5 text-red-600"></i>';
+            } else if (type === 'warning') {
+                toastIcon.innerHTML = '<i data-lucide="alert-triangle" class="h-5 w-5 text-orange-600"></i>';
+            }
+
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
+
+            // Show toast
+            toast.classList.remove('translate-y-full');
+            toast.classList.add('translate-y-0');
+
+            // Recreate icons
+            lucide.createIcons();
+
+            // Hide after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0');
+                toast.classList.add('translate-y-full');
+            }, 3000);
+        }
+
+        // Utility functions
+        function predictExpiryDate(category, storage) {
+            const expiryRules = {
+                dairy: { fridge: 7, freezer: 90, pantry: 1 },
+                meat: { fridge: 3, freezer: 180, pantry: 1 },
+                vegetables: { fridge: 10, freezer: 365, pantry: 3 },
+                fruits: { fridge: 7, freezer: 365, pantry: 3 },
+                bread: { fridge: 7, freezer: 90, pantry: 3 },
+                canned: { fridge: 365, freezer: 365, pantry: 730 },
+                frozen: { fridge: 1, freezer: 365, pantry: 1 },
+                dry_goods: { fridge: 365, freezer: 365, pantry: 365 }
+            };
+
+            const categoryRules = expiryRules[category] || expiryRules.dry_goods;
+            const daysToExpiry = categoryRules[storage] || 7;
+
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + daysToExpiry);
+            return expiryDate.toISOString().split('T')[0];
+        }
+
+        function getExpiryStatus(expiryDate) {
+            const now = new Date();
+            const expiry = new Date(expiryDate);
+            const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+            if (daysUntilExpiry < 0) {
+                return { status: 'expired', color: 'bg-red-100 text-red-800', text: 'Expired' };
+            } else if (daysUntilExpiry <= 3) {
+                return { status: 'expiring', color: 'bg-red-100 text-red-800', text: `${daysUntilExpiry} day${daysUntilExpiry === 1 ? '' : 's'} left` };
+            } else if (daysUntilExpiry <= 7) {
+                return { status: 'warning', color: 'bg-orange-100 text-orange-800', text: `${daysUntilExpiry} days left` };
+            } else {
+                return { status: 'good', color: 'bg-green-100 text-green-800', text: `${daysUntilExpiry} days left` };
+            }
+        }
+
+        function getStorageIcon(storage) {
+            switch (storage) {
+                case 'fridge': return 'refrigerator';
+                case 'freezer': return 'snowflake';
+                default: return 'package';
+            }
+        }
+
+        // Upload functions
+        function initializeUpload() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('border-blue-400');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('border-blue-400');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('border-blue-400');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileUpload(files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileUpload(e.target.files[0]);
+                }
+            });
+        }
+
+        function handleFileUpload(file) {
+            if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+                showToast('Invalid File', 'Please upload an image or PDF file', 'error');
+                return;
+            }
+
+            const uploadContent = document.getElementById('uploadContent');
+            const processingContent = document.getElementById('processingContent');
+
+            uploadContent.classList.add('hidden');
+            processingContent.classList.remove('hidden');
+
+            // Simulate processing
+            setTimeout(() => {
+                processReceipt(file);
+            }, 2000);
+        }
+
+        function processReceipt(file) {
+            // Mock receipt processing
+            const mockItems = [
+                { name: 'Milk 2%', category: 'dairy', quantity: 1, unit: 'gallon' },
+                { name: 'Bread Whole Wheat', category: 'bread', quantity: 1, unit: 'each' },
+                { name: 'Chicken Breast', category: 'meat', quantity: 2.5, unit: 'lb' },
+                { name: 'Bananas', category: 'fruits', quantity: 3, unit: 'lb' },
+                { name: 'Spinach Organic', category: 'vegetables', quantity: 1, unit: 'each' }
+            ];
+
+            extractedItems = mockItems;
+            displayExtractedItems();
+
+            const uploadContent = document.getElementById('uploadContent');
+            const processingContent = document.getElementById('processingContent');
+
+            processingContent.classList.add('hidden');
+            uploadContent.classList.remove('hidden');
+
+            showToast('Receipt Processed!', `Found ${mockItems.length} items`);
+        }
+
+        function displayExtractedItems() {
+            const extractedItemsDiv = document.getElementById('extractedItems');
+            const itemsList = document.getElementById('itemsList');
+            const itemCount = document.getElementById('itemCount');
+
+            itemCount.textContent = extractedItems.length;
+            itemsList.innerHTML = '';
+
+            extractedItems.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg';
+                itemDiv.innerHTML = `
+                    <div>
+                        <label class="block text-sm font-medium text-slate-800 mb-1">Name</label>
+                        <input type="text" value="${item.name}" onchange="updateExtractedItem(${index}, 'name', this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-800 mb-1">Category</label>
+                        <select onchange="updateExtractedItem(${index}, 'category', this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            <option value="dairy" ${item.category === 'dairy' ? 'selected' : ''}>Dairy</option>
+                            <option value="meat" ${item.category === 'meat' ? 'selected' : ''}>Meat</option>
+                            <option value="vegetables" ${item.category === 'vegetables' ? 'selected' : ''}>Vegetables</option>
+                            <option value="fruits" ${item.category === 'fruits' ? 'selected' : ''}>Fruits</option>
+                            <option value="bread" ${item.category === 'bread' ? 'selected' : ''}>Bread</option>
+                            <option value="canned" ${item.category === 'canned' ? 'selected' : ''}>Canned</option>
+                            <option value="frozen" ${item.category === 'frozen' ? 'selected' : ''}>Frozen</option>
+                            <option value="dry_goods" ${item.category === 'dry_goods' ? 'selected' : ''}>Dry Goods</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-800 mb-1">Quantity</label>
+                        <input type="number" step="0.1" value="${item.quantity}" onchange="updateExtractedItem(${index}, 'quantity', parseFloat(this.value))" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-800 mb-1">Unit</label>
+                        <select onchange="updateExtractedItem(${index}, 'unit', this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            <option value="each" ${item.unit === 'each' ? 'selected' : ''}>Each</option>
+                            <option value="lb" ${item.unit === 'lb' ? 'selected' : ''}>Pounds</option>
+                            <option value="kg" ${item.unit === 'kg' ? 'selected' : ''}>Kilograms</option>
+                            <option value="oz" ${item.unit === 'oz' ? 'selected' : ''}>Ounces</option>
+                            <option value="g" ${item.unit === 'g' ? 'selected' : ''}>Grams</option>
+                            <option value="gallon" ${item.unit === 'gallon' ? 'selected' : ''}>Gallon</option>
+                            <option value="liter" ${item.unit === 'liter' ? 'selected' : ''}>Liter</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="removeExtractedItem(${index})" class="text-red-600 hover:text-red-800 p-2">
+                            <i data-lucide="trash-2" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                `;
+                itemsList.appendChild(itemDiv);
+            });
+
+            extractedItemsDiv.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function updateExtractedItem(index, field, value) {
+            if (extractedItems[index]) {
+                extractedItems[index][field] = value;
+            }
+        }
+
+        function removeExtractedItem(index) {
+            extractedItems.splice(index, 1);
+            displayExtractedItems();
+            document.getElementById('itemCount').textContent = extractedItems.length;
+        }
+
+        function clearItems() {
+            extractedItems = [];
+            document.getElementById('extractedItems').classList.add('hidden');
+        }
+
+        function addToPantry() {
+            if (extractedItems.length === 0) return;
+
+            const storage = document.getElementById('storageSelect').value;
+
+            extractedItems.forEach(item => {
+                const newItem = {
+                    id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                    name: item.name,
+                    category: item.category,
+                    quantity: item.quantity,
+                    unit: item.unit,
+                    storage: storage,
+                    predictedExpiry: predictExpiryDate(item.category, storage),
+                    notes: '',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                pantryItems.push(newItem);
+            });
+
+            localStorage.setItem('voxquery-pantry', JSON.stringify(pantryItems));
+            showToast('Items Added!', `Successfully added ${extractedItems.length} items to pantry`);
+            clearItems();
+        }
+
+        // Pantry functions
+        function loadPantryItems() {
+            const pantryGrid = document.getElementById('pantryGrid');
+            const emptyState = document.getElementById('emptyState');
+            const totalItems = document.getElementById('totalItems');
+            const expiringItems = document.getElementById('expiringItems');
+
+            // Filter items
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const storageFilter = document.getElementById('storageFilter').value;
+
+            let filteredItems = pantryItems.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(searchTerm);
+                const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
+                const matchesStorage = storageFilter === 'all' || item.storage === storageFilter;
+                return matchesSearch && matchesCategory && matchesStorage;
+            });
+
+            // Sort by expiry date
+            filteredItems.sort((a, b) => new Date(a.predictedExpiry) - new Date(b.predictedExpiry));
+
+            // Update counters
+            totalItems.textContent = pantryItems.length;
+            const expiringSoon = pantryItems.filter(item => {
+                const status = getExpiryStatus(item.predictedExpiry);
+                return status.status === 'expiring';
+            }).length;
+            expiringItems.textContent = expiringSoon;
+
+            if (filteredItems.length === 0) {
+                pantryGrid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                pantryGrid.innerHTML = '';
+
+                filteredItems.forEach(item => {
+                    const expiryStatus = getExpiryStatus(item.predictedExpiry);
+                    const itemCard = document.createElement('div');
+                    itemCard.className = 'professional-card hover-lift p-6 rounded-2xl';
+                    itemCard.innerHTML = `
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800 mb-1">${item.name}</h3>
+                                <div class="flex items-center space-x-2 text-sm text-slate-600">
+                                    <i data-lucide="${getStorageIcon(item.storage)}" class="h-4 w-4"></i>
+                                    <span class="capitalize">${item.storage}</span>
+                                    <span>•</span>
+                                    <span class="capitalize">${item.category.replace('_', ' ')}</span>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${expiryStatus.color}">
+                                ${expiryStatus.status === 'expiring' ? '<i data-lucide="alert-triangle" class="h-3 w-3 mr-1"></i>' : ''}
+                                ${expiryStatus.text}
+                            </span>
+                        </div>
+
+                        <div class="space-y-2 mb-4 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Quantity:</span>
+                                <span class="text-slate-800">${item.quantity} ${item.unit}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Expires:</span>
+                                <span class="text-slate-800">${new Date(item.predictedExpiry).toLocaleDateString()}</span>
+                            </div>
+                            ${item.notes ? `
+                                <div class="text-sm">
+                                    <span class="text-slate-600">Notes:</span>
+                                    <p class="mt-1 text-xs bg-slate-100 p-2 rounded">${item.notes}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="flex space-x-2">
+                            <button onclick="editItem('${item.id}')" class="flex-1 border border-slate-300 text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg flex items-center justify-center space-x-2">
+                                <i data-lucide="edit" class="h-4 w-4"></i>
+                                <span>Edit</span>
+                            </button>
+                            <button onclick="deleteItem('${item.id}')" class="text-red-600 hover:text-red-800 px-4 py-2 rounded-lg">
+                                <i data-lucide="trash-2" class="h-4 w-4"></i>
+                            </button>
+                        </div>
+                    `;
+                    pantryGrid.appendChild(itemCard);
+                });
+            }
+
+            lucide.createIcons();
+        }
+
+        function showAddItemModal() {
+            document.getElementById('addItemModal').classList.add('active');
+        }
+
+        function closeAddItemModal() {
+            document.getElementById('addItemModal').classList.remove('active');
+            // Reset form
+            document.getElementById('newItemName').value = '';
+            document.getElementById('newItemCategory').value = 'dry_goods';
+            document.getElementById('newItemStorage').value = 'pantry';
+            document.getElementById('newItemQuantity').value = '1';
+            document.getElementById('newItemUnit').value = 'each';
+            document.getElementById('newItemNotes').value = '';
+        }
+
+        function addNewItem() {
+            const name = document.getElementById('newItemName').value.trim();
+            const category = document.getElementById('newItemCategory').value;
+            const storage = document.getElementById('newItemStorage').value;
+            const quantity = parseFloat(document.getElementById('newItemQuantity').value);
+            const unit = document.getElementById('newItemUnit').value;
+            const notes = document.getElementById('newItemNotes').value.trim();
+
+            if (!name) {
+                showToast('Error', 'Please enter an item name', 'error');
+                return;
+            }
+
+            const newItem = {
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                name,
+                category,
+                quantity,
+                unit,
+                storage,
+                predictedExpiry: predictExpiryDate(category, storage),
+                notes,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            pantryItems.push(newItem);
+            localStorage.setItem('voxquery-pantry', JSON.stringify(pantryItems));
+            
+            closeAddItemModal();
+            loadPantryItems();
+            showToast('Item Added!', `${name} has been added to your pantry`);
+        }
+
+        function editItem(id) {
+            // For simplicity, we'll just show an alert. In a full implementation, you'd show an edit modal
+            showToast('Edit Item', 'Edit functionality would be implemented here', 'warning');
+        }
+
+        function deleteItem(id) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                pantryItems = pantryItems.filter(item => item.id !== id);
+                localStorage.setItem('voxquery-pantry', JSON.stringify(pantryItems));
+                loadPantryItems();
+                showToast('Item Deleted', 'Item has been removed from your pantry');
+            }
+        }
+
+        // Recipe functions
+        function loadRecipes() {
+            const recipesGrid = document.getElementById('recipesGrid');
+            const recipesEmptyState = document.getElementById('recipesEmptyState');
+            const recipesExpiryAlert = document.getElementById('recipesExpiryAlert');
+            const expiringIngredients = document.getElementById('expiringIngredients');
+
+            // Get expiring items
+            const expiring = pantryItems.filter(item => {
+                const status = getExpiryStatus(item.predictedExpiry);
+                return status.status === 'expiring' || status.status === 'warning';
+            });
+
+            if (expiring.length > 0) {
+                recipesExpiryAlert.classList.remove('hidden');
+                expiringIngredients.innerHTML = expiring.map(item => 
+                    `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                        ${item.name} - ${Math.ceil((new Date(item.predictedExpiry) - new Date()) / (1000 * 60 * 60 * 24))} days
+                    </span>`
+                ).join('');
+            } else {
+                recipesExpiryAlert.classList.add('hidden');
+            }
+
+            // Mock recipes
+            const mockRecipes = [
+                {
+                    id: '1',
+                    name: 'Quick Stir Fry',
+                    description: 'Use up your vegetables before they expire',
+                    ingredients: ['vegetables', 'oil', 'soy sauce', 'garlic'],
+                    prepTime: 10,
+                    cookTime: 10
+                },
+                {
+                    id: '2',
+                    name: 'Smoothie Bowl',
+                    description: 'Perfect for overripe fruits',
+                    ingredients: ['fruits', 'yogurt', 'honey', 'granola'],
+                    prepTime: 5,
+                    cookTime: 0
+                },
+                {
+                    id: '3',
+                    name: 'Soup Special',
+                    description: 'Transform expiring vegetables into hearty soup',
+                    ingredients: ['vegetables', 'broth', 'herbs', 'onion'],
+                    prepTime: 15,
+                    cookTime: 25
+                }
+            ];
+
+            if (pantryItems.length === 0) {
+                recipesEmptyState.classList.remove('hidden');
+                recipesGrid.innerHTML = '';
+            } else {
+                recipesEmptyState.classList.add('hidden');
+                recipesGrid.innerHTML = '';
+
+                mockRecipes.forEach(recipe => {
+                    const recipeCard = document.createElement('div');
+                    recipeCard.className = 'professional-card hover-lift p-6 rounded-2xl';
+                    recipeCard.innerHTML = `
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-2">${recipe.name}</h3>
+                                <p class="text-slate-600">${recipe.description}</p>
+                            </div>
+                            <i data-lucide="chef-hat" class="h-6 w-6 text-blue-600"></i>
+                        </div>
+
+                        <div class="flex items-center space-x-4 text-sm text-slate-600 mb-4">
+                            <div class="flex items-center space-x-1">
+                                <i data-lucide="clock" class="h-4 w-4"></i>
+                                <span>${recipe.prepTime + recipe.cookTime} min</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <i data-lucide="users" class="h-4 w-4"></i>
+                                <span>2-4 servings</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="font-medium mb-2 text-slate-800">Ingredients:</h4>
+                            <div class="flex flex-wrap gap-1">
+                                ${recipe.ingredients.map(ingredient => 
+                                    `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800">${ingredient}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 pt-4 border-t mb-4">
+                            <div class="text-center">
+                                <div class="text-lg font-semibold text-blue-600">${recipe.prepTime}m</div>
+                                <div class="text-xs text-slate-600">Prep Time</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-semibold text-blue-600">${recipe.cookTime}m</div>
+                                <div class="text-xs text-slate-600">Cook Time</div>
+                            </div>
+                        </div>
+
+                        <button class="w-full professional-btn text-white border-0 px-4 py-2 rounded-lg flex items-center justify-center space-x-2">
+                            <i data-lucide="chef-hat" class="h-4 w-4"></i>
+                            <span>Start Cooking</span>
+                        </button>
+                    `;
+                    recipesGrid.appendChild(recipeCard);
+                });
+            }
+
+            lucide.createIcons();
+        }
+
+        // Settings functions
+        function loadSettings() {
+            document.getElementById('emailInput').value = settings.email;
+            document.getElementById('notificationDays').value = settings.notificationDays;
+            document.getElementById('emailNotifications').checked = settings.emailNotifications;
+        }
+
+        function saveSettings() {
+            settings.email = document.getElementById('emailInput').value;
+            settings.notificationDays = parseInt(document.getElementById('notificationDays').value);
+            settings.emailNotifications = document.getElementById('emailNotifications').checked;
+
+            localStorage.setItem('voxquery-settings', JSON.stringify(settings));
+            showToast('Settings Saved!', 'Your preferences have been updated');
+        }
+
+        function clearAllData() {
+            if (confirm('Are you absolutely sure? This will permanently delete all your pantry items, settings, and preferences.')) {
+                localStorage.removeItem('voxquery-pantry');
+                localStorage.removeItem('voxquery-settings');
+                localStorage.removeItem('voxquery-model-trained');
+                localStorage.removeItem('voxquery-model-saved');
+                
+                pantryItems = [];
+                settings = { email: '', notificationDays: 3, emailNotifications: true };
+                modelTrained = false;
+                
+                loadSettings();
+                loadPantryItems();
+                showToast('Data Cleared', 'All data has been removed from this device');
+            }
+        }
+
+        // Home page functions
+        function updateExpiryAlert() {
+            const expiryAlert = document.getElementById('expiryAlert');
+            const expiryText = document.getElementById('expiryText');
+
+            const expiring = pantryItems.filter(item => {
+                const status = getExpiryStatus(item.predictedExpiry);
+                return status.status === 'expiring';
+            });
+
+            if (expiring.length > 0) {
+                expiryAlert.classList.remove('hidden');
+                expiryText.textContent = `${expiring.length} item${expiring.length > 1 ? 's' : ''} expiring soon!`;
+            } else {
+                expiryAlert.classList.add('hidden');
+            }
+        }
+
+        // Initialize the application
+        function init() {
+            // Set up event listeners
+            document.getElementById('searchInput').addEventListener('input', loadPantryItems);
+            document.getElementById('categoryFilter').addEventListener('change', loadPantryItems);
+            document.getElementById('storageFilter').addEventListener('change', loadPantryItems);
+
+            // Initialize upload functionality
+            initializeUpload();
+
+            // Update model status
+            if (modelTrained) {
+                document.getElementById('modelStatus').textContent = 'Trained';
+                document.getElementById('modelStatus').className = 'inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800';
+                document.getElementById('saveBtn').disabled = false;
+            }
+
+            // Show home section by default
+            showSection('home');
+
+            // Initialize icons
+            lucide.createIcons();
+        }
+
+        // Start the application when the page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
