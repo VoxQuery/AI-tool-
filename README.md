@@ -1,6 +1,6 @@
 # VoxQuery - Digital Food Waste Tracker
 
-A full-stack web application designed to minimize food waste by tracking grocery purchases, predicting expiry dates, sending smart alerts, and suggesting recipes for items about to expire.
+A AI based web application designed to minimize food waste by tracking grocery purchases, predicting expiry dates, sending smart alerts, and suggesting recipes for items about to expire.
 
 ## Features
 
@@ -119,35 +119,8 @@ voxquery-food-tracker/
 - `GET /api/settings` - Get user settings
 - `POST /api/settings` - Update user settings
 
-## Deployment
 
-### Deploy to Vercel
-
-1. **Push your code to GitHub**
-   \`\`\`bash
-   git add .
-   git commit -m "Initial commit"
-   git push origin main
-   \`\`\`
-
-2. **Connect to Vercel**
-   - Go to [vercel.com](https://vercel.com)
-   - Click "New Project"
-   - Import your GitHub repository
-   - Configure environment variables if needed
-   - Deploy!
-
-3. **Environment Variables (Production)**
-   Add these in your Vercel dashboard:
-   \`\`\`env
-   SMTP_HOST=smtp.gmail.com
-   SMTP_PORT=587
-   SMTP_USER=your-email@gmail.com
-   SMTP_PASS=your-app-password
-   DATABASE_URL=your-production-database-url
-   \`\`\`
-
-### Manual Deployment
+### Deployment
 
 1. **Build the application**
    \`\`\`bash
@@ -205,4 +178,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Deployed on [Vercel](https://vercel.com/)
 \`\`\`
 
-Let's also create the package.json file:
+
