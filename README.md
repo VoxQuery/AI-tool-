@@ -58,8 +58,6 @@ A AI based web application designed to minimize food waste by tracking grocery p
 4. **Run the development server**
    \`\`\`bash
    npm run dev
-   # or
-   yarn dev
    \`\`\`
 
 5. **Open your browser**
@@ -67,7 +65,7 @@ A AI based web application designed to minimize food waste by tracking grocery p
 
 ## Project Structure
 
-\`\`\`
+```
 voxquery-food-tracker/
 ├── app/                    # Next.js App Router pages
 │   ├── api/               # API routes
@@ -96,7 +94,7 @@ voxquery-food-tracker/
 │   └── pantry.ts         # Pantry-related types
 └── hooks/                # Custom React hooks
     └── use-toast.ts      # Toast notifications
-\`\`\`
+```
 
 ## API Endpoints
 
